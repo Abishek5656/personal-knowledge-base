@@ -1,5 +1,5 @@
 import client from "../config/weaviate.js";
-import { callOpenRouter } from "../services/llmService.js";
+import { callLLM } from "../services/llmService.js";
 
 export async function systemStatus(req, res) {
   try {
@@ -16,7 +16,7 @@ export async function systemStatus(req, res) {
     let llmStatus = "OK";
 
     try {
-      await callOpenRouter("ping");
+      await callLLM("ping");
     } catch {
       llmStatus = "DOWN";
     }
@@ -24,13 +24,12 @@ export async function systemStatus(req, res) {
     res.json({
       backend: "OK",
       database: weaviateStatus,
-      llm: llmStatus
+      llm: llmStatus,
     });
-
   } catch (err) {
     res.status(500).json({
       message: "Status check failed",
-      error: err.message
+      error: err.message,
     });
   }
 }

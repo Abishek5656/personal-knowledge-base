@@ -1,5 +1,5 @@
 import { getRelevantChunks } from "../services/retrievalService.js";
-import { callOpenRouter } from "../services/llmService.js";
+import { callLLM } from "../services/llmService.js";
 
 export async function askQuestion(req, res) {
   try {
@@ -15,7 +15,7 @@ export async function askQuestion(req, res) {
     if (!chunks.length) {
       return res.json({
         answer: "No relevant information found.",
-        sources: []
+        sources: [],
       });
     }
 
@@ -36,22 +36,21 @@ export async function askQuestion(req, res) {
     `;
 
     // 3. Call LLM
-    const answer = await callOpenRouter(prompt);
+    const answer = await callLLM(prompt);
 
     // 4. Return answer + sources
     res.json({
       answer,
-      sources: chunks.map(c => ({
+      sources: chunks.map((c) => ({
         text: c.text,
         source: c.source,
-        chunkIndex: c.chunkIndex
-      }))
+        chunkIndex: c.chunkIndex,
+      })),
     });
-
   } catch (err) {
     res.status(500).json({
       message: "Error answering question",
-      error: err.message
+      error: err.message,
     });
   }
 }

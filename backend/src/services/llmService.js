@@ -1,45 +1,108 @@
+import { GoogleGenAI } from "@google/genai";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-export async function callOpenRouter(prompt) {
-  const response = await fetch(
-    "https://openrouter.ai/api/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${process.env.OPENROUTER_API_KEY}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "google/gemma-3-27b-it:free",
-        messages: [
-          {
-            role: "user",
-            content: `You are a helpful assistant that answers strictly from provided context.\n\n${prompt}`,
-          },
-        ],
-      }),
-    },
-  );
+const googleGenAI = new GoogleGenAI({ apiKey: process.env.GOOGLE_API_KEY });
 
-  if (!response.ok) {
-    const errorText = await response.text();
-    console.error("OpenRouter API Error:", errorText);
-    throw new Error(
-      `OpenRouter API failed with status ${response.status}: ${errorText}`,
-    );
+export async function callLLM(prompt) {
+  // Try a model from env first, otherwise use a safe default
+  const envModel = process.env.GENAI_MODEL;
+  // Default model: a broadly-available text generation model; change via GENAI_MODEL env var if you have preview access
+  const defaultModel = "text-bison@001";
+  const preferredModel = envModel || defaultModel;
+
+  async function doGenerate(model) {
+    // Keep payload simple and compatible with common examples
+    return googleGenAI.models.generateContent({
+      model,
+      contents: prompt,
+    });
   }
 
-  const data = await response.json();
+  try {
+    let response;
 
-  if (!data.choices || !data.choices.length) {
-    console.error(
-      "Unexpected OpenRouter response format:",
-      JSON.stringify(data, null, 2),
-    );
-    throw new Error("Invalid response format from OpenRouter");
+    try {
+      response = await doGenerate(preferredModel);
+    } catch (err) {
+      // If model not found, try to list available models and pick a supported one
+      if (err?.status === 404) {
+        try {
+          // SDK returns a Pager when listing resources; iterate to collect models
+          const pager = await googleGenAI.models.list();
+          const availableModels = [];
+
+          // Pager is async iterable
+          for await (const m of pager) {
+            availableModels.push(m);
+          }
+
+          // Some SDK versions expose the initial page as .models on the pager
+          if (Array.isArray(pager?.models)) {
+            for (const m of pager.models) {
+              if (!availableModels.includes(m)) availableModels.push(m);
+            }
+          }
+
+          const fallback =
+            availableModels.find((m) =>
+              (m.supportedMethods || []).includes("generateContent"),
+            ) ||
+            availableModels.find((m) =>
+              /bison|gemini/i.test(m.name || m.id || m.displayName || ""),
+            ) ||
+            availableModels[0];
+
+          const fallbackModel =
+            fallback?.name ||
+            fallback?.id ||
+            fallback?.model ||
+            fallback?.modelId ||
+            fallback?.displayName;
+
+          if (fallbackModel) {
+            console.info(
+              "Retrying generateContent with fallback model:",
+              fallbackModel,
+            );
+            response = await doGenerate(fallbackModel);
+          } else {
+            throw err; // rethrow original
+          }
+        } catch (listErr) {
+          console.error("List models / fallback retry failed:", listErr);
+          console.error(
+            "If you expected a preview model to be available, set the GENAI_MODEL env var to a supported model.",
+          );
+          // Propagate original error so caller sees the model-not-found status
+          throw err;
+        }
+      } else {
+        throw err;
+      }
+    }
+
+    // Try to extract a plain text answer from common response shapes
+    if (typeof response === "string") return response;
+
+    // Newer GenAI SDKs often return an output array with content segments
+    if (response?.output?.[0]?.content) {
+      const parts = response.output[0].content
+        .map((c) => c?.text || c?.message || (typeof c === "string" ? c : null))
+        .filter(Boolean);
+      if (parts.length) return parts.join("\n");
+    }
+
+    // Some responses include candidates
+    if (response?.candidates?.[0]?.content?.parts?.[0]?.text) {
+      return response.candidates[0].content.parts.map((p) => p.text).join("");
+    }
+
+    // As a last resort, return the JSON
+    return JSON.stringify(response);
+  } catch (e) {
+    console.error("Google GenAI Error:", e);
+    throw new Error(`Google GenAI failed: ${e.message}`);
   }
-
-  return data.choices[0].message.content;
 }
