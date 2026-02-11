@@ -7,6 +7,9 @@ import Loader from "./components/Loader";
 
 const Home = lazy(() => import("./pages/Home"));
 const UploadPage = lazy(() => import("./pages/UploadPage"));
+const DocumentsPage = lazy(() => import("./pages/DocumentsPage"));
+const AskPage = lazy(() => import("./pages/AskPage"));
+const StatusPage = lazy(() => import("./pages/StatusPage"));
 
 function App() {
   return (
@@ -17,6 +20,9 @@ function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/upload" element={<UploadPage />} />
+            <Route path="/documents" element={<DocumentsPage />} />
+            <Route path="/ask" element={<AskPage />} />
+            <Route path="/status" element={<StatusPage />} />
           </Routes>
         </Suspense>
       </BrowserRouter>
