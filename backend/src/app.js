@@ -3,6 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 import documentRoutes from "./routes/documentRoutes.js";
+import qaRoutes from "./routes/qaRoutes.js";
+
 
 dotenv.config();
 
@@ -12,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use("/api/documents", documentRoutes);
+app.use("/api/qa", qaRoutes);
 
 app.get("/", (req, res) => {
   res.send("RAG Backend Running");

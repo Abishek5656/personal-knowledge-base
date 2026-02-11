@@ -4,12 +4,7 @@ export async function createSchema() {
   const schema = {
     class: "DocumentChunk",
     description: "Chunks of uploaded documents",
-    vectorizer: "text2vec-huggingface",
-    moduleConfig: {
-      "text2vec-huggingface": {
-        model: "sentence-transformers/all-MiniLM-L6-v2",
-      },
-    },
+    vectorizer: "none",
     properties: [
       {
         name: "text",
