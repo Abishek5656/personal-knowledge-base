@@ -163,7 +163,7 @@ export default function AskPage() {
             </Box>
 
             {/* Answer Text */}
-            <Typography variant="body1" sx={{ lineHeight: 1.8, fontSize: "1.1rem", color: "#333", mb: 4 }}>
+            <Typography variant="body1" sx={{ whiteSpace: "pre-line", lineHeight: 1.8, fontSize: "1.1rem", color: "#333", mb: 4 }}>
               {result.answer}
             </Typography>
 
