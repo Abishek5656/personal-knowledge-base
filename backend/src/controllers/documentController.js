@@ -1,6 +1,23 @@
 import { extractText } from "../utils/textExtractor.js";
 import { chunkText } from "../services/chunkingService.js";
 import { storeChunksInWeaviate } from "../services/vectorService.js";
+import { getUploadedDocuments } from "../services/documentService.js";
+
+export async function listDocuments(req, res) {
+  try {
+    const docs = await getUploadedDocuments();
+
+    res.json({
+      documents: docs
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: "Error fetching documents",
+      error: err.message
+    });
+  }
+}
+
 
 export async function uploadDocument(req, res) {
   try {
