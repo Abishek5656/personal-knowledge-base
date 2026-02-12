@@ -155,6 +155,5 @@ To develop locally, you need to run the frontend and backend separately.
 │   └── package.json
 ├── Dockerfile          # Multi-stage Docker build instruction
 ├── .dockerignore       # Performance optimization for Docker builds
-├── scripts/            # Automation scripts (e.g., screenshots)
 └── THINKING.md         # Architectural decisions and approach
 ```
