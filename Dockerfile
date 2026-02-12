@@ -20,7 +20,7 @@ RUN npm install --only=production
 
 # Copy backend source
 COPY backend/src ./src
-COPY backend/uploads ./uploads
+
 
 # Copy frontend build output into backend/public
 COPY --from=frontend-builder /app/frontend/dist ./public
