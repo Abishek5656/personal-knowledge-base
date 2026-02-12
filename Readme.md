@@ -33,6 +33,12 @@ _List of all indexed documents in the vector database._
 ![Q&A Page](docs/images/ask.png)
 _Chat interface to ask questions against your knowledge base._
 
+### Demo Video
+
+[![Watch the Demo](https://img.youtube.com/vi/YOUR_VIDEO_ID/0.jpg)](https://drive.google.com/file/d/1VoQDZKuuURIjYcb8X_3hHJU3zc7Y3TGy/view?usp=drive_link)
+
+[Click here to watch the demo video](https://drive.google.com/file/d/1VoQDZKuuURIjYcb8X_3hHJU3zc7Y3TGy/view?usp=drive_link)
+
 ---
 
 ## Architecture
